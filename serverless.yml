@@ -1,0 +1,37 @@
+service: 'walmart-email-service'
+
+provider:
+  name: aws
+  runtime: java11
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'ap-south-1'}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - SES:SendEmail
+        - SES:SendRawEmail
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - SSM:GetParameter
+      Resource:
+        - arn:aws:ssm:ap-south-1:425380566961:parameter/*
+
+custom:
+  names:
+    dynamodb:
+      stream:
+        address: !ImportValue walmart-address-stream-arn
+
+functions:
+  sendEmail:
+      tracing: true
+      handler: com.walmart.emailService.EmailHandler
+      events:
+        - stream:
+            type: dynamodb
+            arn: ${self:custom.names.dynamodb.stream.address}
+            batchSize: 100
+
+package:
+  artifact: target/${self:service}-1.0.jar
