@@ -10,6 +10,7 @@ provider:
       Action:
         - SES:SendEmail
         - SES:SendRawEmail
+        - SES:SendBulkTemplatedEmail
       Resource: "*"
     - Effect: Allow
       Action:
@@ -32,6 +33,7 @@ functions:
             type: dynamodb
             arn: ${self:custom.names.dynamodb.stream.address}
             batchSize: 100
+
 
 package:
   artifact: target/${self:service}-1.0.jar
